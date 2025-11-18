@@ -16,25 +16,25 @@ app.use(
   cors({
     credentials: true,
     origin: [
-      process.env.CLIENT_URL || "http://localhost:3000",
-      "https://kambaz-next-js-git-a5-aparnaa-rajans-projects.vercel.app", 
-      /\.vercel\.app$/ 
+      "http://localhost:3000",
+      process.env.CLIENT_URL,
+      /\.vercel\.app$/
     ],
   })
 );
 
 const sessionOptions = {
-  secret: process.env.SESSION_SECRET || "kambaz",
+  secret: process.env.SESSION_SECRET || "super secret session phrase",
   resave: false,
   saveUninitialized: false,
 };
 
-if (process.env.SERVER_ENV !== "development") {
+if (process.env.NODE_ENV === "production") {
   sessionOptions.proxy = true;
   sessionOptions.cookie = {
     sameSite: "none",
     secure: true,
-    domain: process.env.SERVER_URL,
+    httpOnly: true,
   };
 }
 
