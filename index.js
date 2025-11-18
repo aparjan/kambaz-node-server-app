@@ -15,7 +15,11 @@ const app = express();
 app.use(
   cors({
     credentials: true,
-    origin: process.env.CLIENT_URL || "http://localhost:3000",
+    origin: [
+      process.env.CLIENT_URL || "http://localhost:3000",
+      "https://kambaz-next-js-git-a5-aparnaa-rajans-projects.vercel.app", 
+      /\.vercel\.app$/ 
+    ],
   })
 );
 
