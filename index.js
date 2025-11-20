@@ -12,26 +12,37 @@ import EnrollmentRoutes from './Kambaz/Enrollments/routes.js';
 
 const app = express();
 
+// MUST be before session middleware
+app.set('trust proxy', 1);
+
+// CORS configuration
 app.use(
   cors({
     credentials: true,
     origin: [
       "http://localhost:3000",
+      "https://kambaz-next-js-git-a5-aparnaa-rajans-projects.vercel.app",
       process.env.CLIENT_URL,
-      /\.vercel\.app$/
-    ],
+      /\.vercel\.app$/  // Changed: Added the dot before vercel
+    ].filter(Boolean),
   })
 );
 
+// Session configuration
 const sessionOptions = {
   secret: process.env.SESSION_SECRET || "super secret session phrase",
   resave: false,
   saveUninitialized: false,
+  cookie: {
+    maxAge: 24 * 60 * 60 * 1000, // 24 hours
+  }
 };
 
-if (process.env.NODE_ENV === "production") {
+// Use SERVER_ENV instead of NODE_ENV
+if (process.env.SERVER_ENV === "production") {
   sessionOptions.proxy = true;
   sessionOptions.cookie = {
+    ...sessionOptions.cookie,
     sameSite: "none",
     secure: true,
     httpOnly: true,
@@ -50,5 +61,7 @@ AssignmentRoutes(app);
 EnrollmentRoutes(app);
 
 app.listen(process.env.PORT || 4000, () => {
-    console.log('Server running on port 4000');
+    console.log('Server running on port', process.env.PORT || 4000);
+    console.log('SERVER_ENV:', process.env.SERVER_ENV);
+    console.log('CLIENT_URL:', process.env.CLIENT_URL);
 });
