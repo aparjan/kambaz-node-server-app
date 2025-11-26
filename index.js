@@ -1,6 +1,7 @@
 import "dotenv/config";
 import session from "express-session";
 import express from 'express';
+import mongoose from "mongoose";
 import cors from "cors";
 import Hello from "./Hello.js";
 import Lab5 from './Lab5/index.js';
@@ -10,12 +11,13 @@ import ModuleRoutes from './Kambaz/Modules/routes.js';
 import AssignmentRoutes from './Kambaz/Assignments/routes.js';
 import EnrollmentRoutes from './Kambaz/Enrollments/routes.js';
 
+const CONNECTION_STRING = "mongodb://127.0.0.1:27017/kambaz" 
+mongoose.connect(CONNECTION_STRING);
+
 const app = express();
 
-// MUST be before session middleware
 app.set('trust proxy', 1);
 
-// CORS configuration
 app.use(
   cors({
     credentials: true,
@@ -23,22 +25,20 @@ app.use(
       "http://localhost:3000",
       "https://kambaz-next-js-git-a5-aparnaa-rajans-projects.vercel.app",
       process.env.CLIENT_URL,
-      /\.vercel\.app$/  // Changed: Added the dot before vercel
+      /\.vercel\.app$/  
     ].filter(Boolean),
   })
 );
 
-// Session configuration
 const sessionOptions = {
   secret: process.env.SESSION_SECRET || "super secret session phrase",
   resave: false,
   saveUninitialized: false,
   cookie: {
-    maxAge: 24 * 60 * 60 * 1000, // 24 hours
+    maxAge: 24 * 60 * 60 * 1000, 
   }
 };
 
-// Use SERVER_ENV instead of NODE_ENV
 if (process.env.SERVER_ENV === "production") {
   sessionOptions.proxy = true;
   sessionOptions.cookie = {
