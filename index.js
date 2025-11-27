@@ -11,8 +11,18 @@ import ModuleRoutes from './Kambaz/Modules/routes.js';
 import AssignmentRoutes from './Kambaz/Assignments/routes.js';
 import EnrollmentRoutes from './Kambaz/Enrollments/routes.js';
 
-const CONNECTION_STRING = "mongodb://127.0.0.1:27017/kambaz" 
-mongoose.connect(CONNECTION_STRING);
+// Use DATABASE_CONNECTION_STRING for production, fallback to local for development
+const CONNECTION_STRING = process.env.DATABASE_CONNECTION_STRING || "mongodb://127.0.0.1:27017/kambaz";
+
+mongoose
+  .connect(CONNECTION_STRING)
+  .then(() => {
+    console.log("✅ Connected to MongoDB successfully!");
+    console.log("📍 Database:", CONNECTION_STRING.includes("mongodb.net") ? "MongoDB Atlas (Cloud)" : "Local MongoDB");
+  })
+  .catch((err) => {
+    console.error("❌ MongoDB connection error:", err);
+  });
 
 const app = express();
 
@@ -23,7 +33,7 @@ app.use(
     credentials: true,
     origin: [
       "http://localhost:3000",
-      "https://kambaz-next-js-git-a5-aparnaa-rajans-projects.vercel.app",
+      "https://kambaz-next-js-git-a6-aparnaa-rajans-projects.vercel.app",
       process.env.CLIENT_URL,
       /\.vercel\.app$/  
     ].filter(Boolean),
@@ -61,7 +71,7 @@ AssignmentRoutes(app);
 EnrollmentRoutes(app);
 
 app.listen(process.env.PORT || 4000, () => {
-    console.log('Server running on port', process.env.PORT || 4000);
-    console.log('SERVER_ENV:', process.env.SERVER_ENV);
-    console.log('CLIENT_URL:', process.env.CLIENT_URL);
+    console.log('🚀 Server running on port', process.env.PORT || 4000);
+    console.log('🌍 SERVER_ENV:', process.env.SERVER_ENV);
+    console.log('🔗 CLIENT_URL:', process.env.CLIENT_URL);
 });
