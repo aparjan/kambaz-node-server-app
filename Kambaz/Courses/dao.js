@@ -1,36 +1,47 @@
-import Database from "../Database/index.js";
-import { v4 as uuidv4 } from "uuid";
+import model from "./model.js";
+import enrollmentsModel from "../Enrollments/model.js";
 
-let { courses, enrollments } = Database;
+export const findAllCourses = () => 
+  model.find({}, { name: 1, description: 1 });
 
-export function findAllCourses() {
-  return courses;
-}
+export const findCourseById = (courseId) => model.findById(courseId);
 
-export function findCoursesForEnrolledUser(userId) {
-  const { courses, enrollments } = Database;
-  const enrolledCourses = courses.filter((course) =>
-    enrollments.some((enrollment) => enrollment.user === userId && enrollment.course === course._id));
-  return enrolledCourses;
-}
-
-export function createCourse(course) {
-  const newCourse = { ...course, _id: uuidv4() };
-  Database.courses = [...Database.courses, newCourse];
-  return newCourse;
-}
-
-export function deleteCourse(courseId) {
-  const { courses, enrollments } = Database;
-  Database.courses = courses.filter((course) => course._id !== courseId);
-  Database.enrollments = enrollments.filter(
-    (enrollment) => enrollment.course !== courseId
+export const findCoursesForEnrolledUser = async (userId) => {
+  console.log("🔍 findCoursesForEnrolledUser called with userId:", userId);
+  
+  // Use Enrollments model to find enrolled courses
+  const enrollments = await enrollmentsModel.find({ user: userId });
+  console.log("📋 Enrollments found:", enrollments.length);
+  
+  const courseIds = enrollments.map((e) => e.course);
+  console.log("🎓 Course IDs:", courseIds);
+  
+  // Get courses from MongoDB that match the enrolled course IDs
+  // Only return name and description
+  const courses = await model.find(
+    { _id: { $in: courseIds } }, 
+    { name: 1, description: 1, image: 1, number: 1 }
   );
-}
+  console.log("✅ Courses found in MongoDB:", courses.length);
+  
+  return courses;
+};
 
-export function updateCourse(courseId, courseUpdates) {
-  const { courses } = Database;
-  const course = courses.find((course) => course._id === courseId);
-  Object.assign(course, courseUpdates);
-  return course;
-}
+export const createCourse = (course) => {
+  console.log("➕ Creating course:", course);
+  const newCourse = { ...course, _id: `${Date.now()}` };
+  console.log("➕ New course with ID:", newCourse);
+  return model.create(newCourse);
+};
+
+export const updateCourse = (courseId, courseUpdates) => {
+  console.log("📝 Updating course:", courseId, "with:", courseUpdates);
+  return model.updateOne({ _id: courseId }, { $set: courseUpdates });
+};
+
+export const deleteCourse = async (courseId) => {
+  console.log("🗑️ Deleting course:", courseId);
+  // Also delete all enrollments for this course
+  await enrollmentsModel.deleteMany({ course: courseId });
+  return model.deleteOne({ _id: courseId });
+};
